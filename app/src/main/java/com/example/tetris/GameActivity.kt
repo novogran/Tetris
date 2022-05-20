@@ -1,6 +1,6 @@
 package com.example.tetris
 
-import android.annotation.SuppressLint
+
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
@@ -20,17 +20,16 @@ class GameActivity: AppCompatActivity() {
     var appPreferences: AppPreferences? = null
     private val appModel:AppModel = AppModel()
 
-    @SuppressLint("ClickableViewAccessibility")
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.game_activity)
         appPreferences = AppPreferences(this)
-        appModel.setPreferences(appPreferences!!)
+        appModel.setPreferences(appPreferences)
 
         val btnRestart = findViewById<Button>(R.id.btn_restart)
         tvHighScore = findViewById<TextView>(R.id.tv_high_score)
         tvCurrentScore = findViewById<TextView>(R.id.tv_current_score)
-        tetrisView.findViewById<TetrisView>(R.id.view_tetris)
+        tetrisView = findViewById<TetrisView>(R.id.view_tetris)
         tetrisView.setActivity(this)
         tetrisView.setModel(appModel)
         tetrisView.setOnTouchListener(this::onTetrisViewTouch)

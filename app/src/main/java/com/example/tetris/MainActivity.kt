@@ -23,8 +23,8 @@ class MainActivity : AppCompatActivity() {
         tvHightScore = findViewById<TextView>(R.id.tv_high_score)
 
         btnNewGame.setOnClickListener(this::onBtnNewGameClick)
-        btnResetScore.setOnClickListener(this::onResetScoreClick)
-        btnExit.setOnClickListener(this::onExitClick)
+        btnResetScore.setOnClickListener(this::onBtnResetScoreClick)
+        btnExit.setOnClickListener(this::onBtnExitClick)
     }
 
     private fun onBtnNewGameClick(view: View){
@@ -32,14 +32,14 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun onResetScoreClick(view: View){
+    private fun onBtnResetScoreClick(view: View){
         val preferences = AppPreferences(this)
         preferences.clearHighScore()
         Snackbar.make(view, "Score successfully reset", Snackbar.LENGTH_SHORT).show()
         tvHightScore?.text="High score: ${preferences.getHighScore()}"
     }
 
-    private fun onExitClick(view: View){
+    private fun onBtnExitClick(view: View){
         System.exit(0)
     }
 

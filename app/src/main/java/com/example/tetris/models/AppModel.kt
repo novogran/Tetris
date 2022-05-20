@@ -11,14 +11,14 @@ class AppModel {
     private var preferences: AppPreferences? = null
 
     var currentBlock: Block? = null
-    var currentState: String = Statuses.AWAITING_STATUS.name
+    var currentState: String = Statuses.AWAITING_START.name
 
     private var field: Array<ByteArray> = array2dOfByte(
-        FieldConstants.ROW_COUNT.values,
-        FieldConstants.COLUMN_COUNT.values
+        FieldConstants.ROW_COUNT.value,
+        FieldConstants.COLUMN_COUNT.value
     )
 
-    fun setPreferences(preferences: AppPreferences){
+    fun setPreferences(preferences: AppPreferences?){
         this.preferences = preferences
     }
 
@@ -41,11 +41,11 @@ class AppModel {
     }
 
     fun isGameAwaitingStart(): Boolean{
-        return currentState == Statuses.AWAITING_STATUS.name
+        return currentState == Statuses.AWAITING_START.name
     }
 
     enum class Statuses{
-        AWAITING_STATUS, OVER, ACTIVE, INACTIVE
+        AWAITING_START, OVER, ACTIVE, INACTIVE
     }
 
     enum class Motions{
@@ -65,9 +65,9 @@ class AppModel {
     private fun validTranslation(position: Point, shape: Array<ByteArray>):Boolean{
         return if(position.y<0 || position.x <0) {
             false
-        } else if(position.y+ shape.size>FieldConstants.ROW_COUNT.values) {
+        } else if(position.y+ shape.size>FieldConstants.ROW_COUNT.value) {
             false
-        } else if(position.x+shape[0].size>FieldConstants.COLUMN_COUNT.values) {
+        } else if(position.x+shape[0].size>FieldConstants.COLUMN_COUNT.value) {
             false
         } else {
             for (i in 0 until shape.size) {
@@ -110,7 +110,7 @@ class AppModel {
                 Motions.ROTATE.name -> {
                     frameNumber = frameNumber?.plus(1)
                     if (frameNumber != null){
-                        if(frameNumber>= currentBlock?.frameNumber as Int){
+                        if(frameNumber>= currentBlock?.frameCount as Int){
                             frameNumber = 0
                         }
                     }
@@ -126,7 +126,7 @@ class AppModel {
                         assessField()
                         generateNextBlock()
                         if(!blockAdditionPossible()){
-                            currentState = Statuses.OVER.name
+                            currentState = Statuses.OVER.name;
                             currentBlock = null;
                             resetField(false);
                         }
@@ -141,8 +141,8 @@ class AppModel {
     }
 
     private fun resetField(ephemeralCellOnly: Boolean = true){
-        for(i in 0 until FieldConstants.ROW_COUNT.values){
-            (0 until FieldConstants.COLUMN_COUNT.values)
+        for(i in 0 until FieldConstants.ROW_COUNT.value){
+            (0 until FieldConstants.COLUMN_COUNT.value)
                 .filter{!ephemeralCellOnly || field[i][it] ==
                         CellConstants.EPHEMERAL.value}
                     .forEach{field[i][it] == CellConstants.EMPTY.value}
@@ -151,15 +151,13 @@ class AppModel {
 
     private fun persistCellData(){
         for(i in 0 until field.size){
-            var emptyCells = 0;
             for (j in 0 until field[i].size){
-                val status = getCellStatus(i,j)
-                val isEmpty = CellConstants.EMPTY.value == status
-                if(isEmpty)
-                    emptyCells++
+                var status = getCellStatus(i,j)
+                if(status == CellConstants.EPHEMERAL.value){
+                    status = currentBlock?.staticValue
+                    setCellStatus(i,j,status)
+                }
             }
-            if(emptyCells == 0)
-                shiftRow(i)
         }
     }
 
@@ -178,14 +176,6 @@ class AppModel {
                 }
             }
         }
-    }
-
-    private fun blockAdditionPossible():Boolean{
-        if (!moveValid(currentBlock?.position as Point,
-            currentBlock?.frameNumber)){
-            return false
-        }
-        return true
     }
 
     private fun shiftRow(nToRow: Int){
@@ -215,12 +205,12 @@ class AppModel {
 
     fun endGame(){
         score = 0
-        currentState = Statuses.OVER.name
+        currentState = AppModel.Statuses.OVER.name
     }
 
     fun resetModel(){
         resetField(false)
-        currentState = Statuses.AWAITING_STATUS.name
+        currentState = Statuses.AWAITING_START.name
         score = 0
     }
 
@@ -238,7 +228,7 @@ class AppModel {
         }
     }
 
-    private fun blockAdditionalPossible(): Boolean{
+    private fun blockAdditionPossible(): Boolean{
         if(!moveValid(currentBlock?.position as Point,
             currentBlock?.frameNumber)){
             return false

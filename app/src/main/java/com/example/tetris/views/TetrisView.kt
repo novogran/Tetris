@@ -17,6 +17,7 @@ import com.example.tetris.GameActivity
 import com.example.tetris.constants.FieldConstants
 import com.example.tetris.models.AppModel
 import com.example.tetris.models.Block
+import kotlin.math.min
 
 class TetrisView: View{
     private val paint = Paint()
@@ -39,28 +40,6 @@ class TetrisView: View{
         private val FRAME_OFFSET_BASE = 10
     }
 
-    private class ViewHandler(private  val owner:TetrisView): Handler(){
-        override fun handleMessage(message: Message) {
-            if(message.what == 0){
-                if(owner.model!=null){
-                    if(owner.model!!.isGameOver()){
-                        owner.model?.endGame()
-                        Toast.makeText(owner.activity,"Game over",
-                            Toast.LENGTH_LONG).show();
-                    }
-                    if(owner.model!!.isGameActive()){
-                        owner.setGameCommandWithDelay(AppModel.Motions.DOWN)
-                    }
-                }
-            }
-        }
-
-        fun sleep(delay: Long){
-            this.removeMessages(0)
-            sendMessageDelayed(obtainMessage(0),delay)
-        }
-    }
-
     private data class Dimension(val width: Int, val height: Int)
 
     fun setModel(model:AppModel){
@@ -75,7 +54,7 @@ class TetrisView: View{
         if(null!=model && (model?.currentState ==
                     AppModel.Statuses.ACTIVE.name)){
             if(AppModel.Motions.DOWN == move){
-                model?.generateField((move.name))
+                model?.generateField(move.name)
                 invalidate()
                 return
             }
@@ -104,8 +83,8 @@ class TetrisView: View{
         super.onDraw(canvas)
         drawFrame(canvas)
         if(model!=null){
-            for(i in 0 until FieldConstants.ROW_COUNT.values){
-                for(j in 0 until FieldConstants.COLUMN_COUNT.values){
+            for(i in 0 until FieldConstants.ROW_COUNT.value){
+                for(j in 0 until FieldConstants.COLUMN_COUNT.value){
                     drawCell(canvas,i,j)
                 }
             }
@@ -150,13 +129,36 @@ class TetrisView: View{
                                previousHeight: Int) {
         super.onSizeChanged(width, height, previousWidth, previousHeight)
         val cellWidth = (width - 2 * FRAME_OFFSET_BASE) /
-                FieldConstants.COLUMN_COUNT.values
+                FieldConstants.COLUMN_COUNT.value
         val cellHeight = (height - 2 * FRAME_OFFSET_BASE) /
-                FieldConstants.ROW_COUNT.values
+                FieldConstants.ROW_COUNT.value
         val n = Math.min(cellWidth,cellHeight)
         this.cellSize = Dimension(n,n)
-        val offsetX = (width - FieldConstants.COLUMN_COUNT.values * n) / 2
-        val offsetY = (height - FieldConstants.ROW_COUNT.values * n) / 2
+        val offsetX = (width - FieldConstants.COLUMN_COUNT.value * n) / 2
+        val offsetY = (height - FieldConstants.ROW_COUNT.value * n) / 2
         this.frameOffset = Dimension(offsetX,offsetY)
     }
+
+    private class ViewHandler(private val owner:TetrisView): Handler(){
+        override fun handleMessage(message: Message) {
+            if(message.what == 0){
+                if(owner.model!=null){
+                    if(owner.model!!.isGameOver()){
+                        owner.model?.endGame()
+                        Toast.makeText(owner.activity,"Game over",
+                            Toast.LENGTH_LONG).show()
+                    }
+                    if(owner.model!!.isGameActive()){
+                        owner.setGameCommandWithDelay(AppModel.Motions.DOWN)
+                    }
+                }
+            }
+        }
+
+        fun sleep(delay: Long){
+            this.removeMessages(0)
+            sendMessageDelayed(obtainMessage(0),delay)
+        }
+    }
 }
+
