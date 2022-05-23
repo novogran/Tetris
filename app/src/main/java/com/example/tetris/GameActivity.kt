@@ -1,6 +1,5 @@
 package com.example.tetris
 
-
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
@@ -27,9 +26,9 @@ class GameActivity: AppCompatActivity() {
         appModel.setPreferences(appPreferences)
 
         val btnRestart = findViewById<Button>(R.id.btn_restart)
-        tvHighScore = findViewById<TextView>(R.id.tv_high_score)
-        tvCurrentScore = findViewById<TextView>(R.id.tv_current_score)
-        tetrisView = findViewById<TetrisView>(R.id.view_tetris)
+        tvHighScore = findViewById(R.id.tv_high_score)
+        tvCurrentScore = findViewById(R.id.tv_current_score)
+        tetrisView = findViewById(R.id.view_tetris)
         tetrisView.setActivity(this)
         tetrisView.setModel(appModel)
         tetrisView.setOnTouchListener(this::onTetrisViewTouch)

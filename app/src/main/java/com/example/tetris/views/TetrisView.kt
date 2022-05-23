@@ -8,16 +8,13 @@ import android.graphics.RectF
 import android.os.Handler
 import android.os.Message
 import android.util.AttributeSet
-import android.util.LongSparseArray
 import android.view.View
-import android.view.translation.ViewTranslationResponse
 import android.widget.Toast
 import com.example.tetris.constants.CellConstants
 import com.example.tetris.GameActivity
 import com.example.tetris.constants.FieldConstants
 import com.example.tetris.models.AppModel
 import com.example.tetris.models.Block
-import kotlin.math.min
 
 class TetrisView: View{
     private val paint = Paint()
@@ -51,8 +48,7 @@ class TetrisView: View{
     }
 
     fun setGameCommand(move: AppModel.Motions){
-        if(null!=model && (model?.currentState ==
-                    AppModel.Statuses.ACTIVE.name)){
+        if(model!=null && (model?.currentState == AppModel.Statuses.ACTIVE.name)){
             if(AppModel.Motions.DOWN == move){
                 model?.generateField(move.name)
                 invalidate()
@@ -146,7 +142,7 @@ class TetrisView: View{
                     if(owner.model!!.isGameOver()){
                         owner.model?.endGame()
                         Toast.makeText(owner.activity,"Game over",
-                            Toast.LENGTH_LONG).show()
+                            Toast.LENGTH_LONG).show();
                     }
                     if(owner.model!!.isGameActive()){
                         owner.setGameCommandWithDelay(AppModel.Motions.DOWN)

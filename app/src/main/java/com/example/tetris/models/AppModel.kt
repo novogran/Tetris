@@ -5,6 +5,7 @@ import com.example.tetris.constants.CellConstants
 import com.example.tetris.constants.FieldConstants
 import com.example.tetris.helper.array2dOfByte
 import com.example.tetris.storage.AppPreferences
+import java.util.Locale.filter
 
 class AppModel {
     var score: Int = 0
@@ -67,7 +68,8 @@ class AppModel {
             false
         } else if(position.y+ shape.size>FieldConstants.ROW_COUNT.value) {
             false
-        } else if(position.x+shape[0].size>FieldConstants.COLUMN_COUNT.value) {
+        } else if(position.x+shape[0].size>FieldConstants
+                .COLUMN_COUNT.value) {
             false
         } else {
             for (i in 0 until shape.size) {
@@ -80,7 +82,7 @@ class AppModel {
                     }
                 }
             }
-            true
+           true
         }
     }
 
@@ -140,12 +142,12 @@ class AppModel {
         }
     }
 
-    private fun resetField(ephemeralCellOnly: Boolean = true){
+    private fun resetField(ephemeralCellsOnly: Boolean = true){
         for(i in 0 until FieldConstants.ROW_COUNT.value){
             (0 until FieldConstants.COLUMN_COUNT.value)
-                .filter{!ephemeralCellOnly || field[i][it] ==
+                .filter{!ephemeralCellsOnly || field[i][it] ==
                         CellConstants.EPHEMERAL.value}
-                    .forEach{field[i][it] == CellConstants.EMPTY.value}
+                    .forEach{field[i][it] = CellConstants.EMPTY.value}
                 }
         }
 
@@ -161,10 +163,24 @@ class AppModel {
         }
     }
 
+    private fun assessField(){
+        for(i in 0 until field.size){
+            var emptyCells = 0;
+            for(j in 0 until field[i].size){
+                val status = getCellStatus(i,j)
+                val isEmpty = CellConstants.EMPTY.value == status
+                if(isEmpty)
+                    emptyCells++
+            }
+            if(emptyCells == 0)
+                shiftRows(i)
+        }
+    }
+
     private fun translateBlock(position: Point,frameNumber: Int){
         synchronized(field){
             val shape: Array<ByteArray>? = currentBlock?.getShape(frameNumber)
-            if(shape!= null) {
+            if(shape != null) {
                 for(i in shape.indices){
                     for(j in 0 until shape[i].size){
                         val y = position.y+i
@@ -178,7 +194,15 @@ class AppModel {
         }
     }
 
-    private fun shiftRow(nToRow: Int){
+    private fun blockAdditionPossible(): Boolean{
+        if(!moveValid(currentBlock?.position as Point,
+                currentBlock?.frameNumber)){
+            return false
+        }
+        return true
+    }
+
+    private fun shiftRows(nToRow: Int){
         if (nToRow> 0){
             for(j in nToRow - 1 downTo 0) {
                 for (m in 0 until field[j].size) {
@@ -208,31 +232,9 @@ class AppModel {
         currentState = AppModel.Statuses.OVER.name
     }
 
-    fun resetModel(){
+    private fun resetModel(){
         resetField(false)
         currentState = Statuses.AWAITING_START.name
         score = 0
-    }
-
-    private fun assessField(){
-        for(i in 0 until field.size){
-            var emptyCells = 0;
-            for(j in 0 until field[i].size){
-                val status = getCellStatus(i,j)
-                val isEmpty = CellConstants.EMPTY.value == status
-                if(isEmpty)
-                    emptyCells++
-            }
-            if(emptyCells == 0)
-                shiftRow(i)
-        }
-    }
-
-    private fun blockAdditionPossible(): Boolean{
-        if(!moveValid(currentBlock?.position as Point,
-            currentBlock?.frameNumber)){
-            return false
-        }
-        return true
     }
 }
